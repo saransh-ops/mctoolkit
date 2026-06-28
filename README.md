@@ -120,7 +120,7 @@ Themes are stored under `/themes/{code}` in Firebase and loaded automatically on
 
 ## 📜 License
 
-MIT — free to use, modify, and deploy. Credit appreciated but not required.
+MIT — free to use, modify, and deploy. 
 
 ---
 
