@@ -13,7 +13,7 @@
 A blazing-fast, zero-install, 100% client-side toolkit for Minecraft server administrators.  
 No account required. No backend. Just open it and go.
 
-[**Open the Toolkit →**](https://mc-toolkit.vercel.app)
+[**Open the Toolkit →**](https://mctoolkit-omega.vercel.app/)
 
 </div>
 
