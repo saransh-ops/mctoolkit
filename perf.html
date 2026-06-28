@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Performance Analyser — MC Toolkit</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div id="nav-root"></div>
+<main>
+<div class="ph"><span class="ph-title">Performance Analyser</span><span class="ph-tag">Lag</span></div>
+<p class="ps">Paste your log to detect lag, TPS drops, overloaded ticks, and get specific fixes.</p>
+<textarea id="perf-in" placeholder="Paste latest.log here — looks for TPS drops, entity lag, chunk loading issues…" style="width:100%;min-height:150px;"></textarea>
+<div class="row" style="margin-top:10px">
+  <button class="btn bp" onclick="doPerf()">Analyse</button>
+  <button class="btn bg" onclick="document.getElementById('perf-in').value='';document.getElementById('perf-out').style.display='none'">Clear</button>
+</div>
+<div id="perf-out" style="display:none;margin-top:16px"></div>
+</main>
+<div class="toast" id="tst"></div>
+<script src="assets/shared.js"></script>
+<script>
+fetch('assets/nav.html').then(r=>r.text()).then(h=>{document.getElementById('nav-root').innerHTML=h;});
+const PERF_RULES=[
+  {pat:/Can't keep up! Is the server overloaded\? Running (\d+)ms? behind/i,title:'Server Can\'t Keep Up',sev:'error',fix:'Your server is running behind. Reduce view-distance.'},
+  {pat:/Skipping (\d+) ticks/i,title:'Ticks Being Skipped',sev:'error',fix:'The server is skipping ticks — severe lag. Reduce entity counts.'}
+];
+function doPerf(){
+  const raw=document.getElementById('perf-in').value;
+  if(!raw.trim()){ toast('Paste a log first'); return; }
+  const found=[];
+  PERF_RULES.forEach(r=>{ const m=raw.match(r.pat); if(m&&!found.find(f=>f.title===r.title)) found.push({...r,match:m[0]}); });
+  const out=document.getElementById('perf-out'); out.style.display='block';
+  if(!found.length){ out.innerHTML=`<div style="background:var(--acc-d);padding:14px;border-radius:8px">Server looks healthy!</div>`; return; }
+  out.innerHTML=found.map(f=>`<div style="background:var(--red-d);padding:14px;margin-bottom:8px;border-radius:8px"><b>${f.title}</b><br>${f.fix}<br><small>${f.match}</small></div>`).join('');
+}
+</script>
+</body>
+</html>

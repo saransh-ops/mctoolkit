@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Player Lookup — MC Toolkit</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div id="nav-root"></div>
+<main>
+<div class="ph"><span class="ph-title">Player Lookup</span><span class="ph-tag">Java</span></div>
+<p class="ps">3D skin viewer, cape detection, UUID, and recent history.</p>
+<div class="row" style="margin-bottom:20px">
+  <input type="text" id="pli" placeholder="Username (e.g. Notch, BananaBrother77)" onkeydown="if(event.key==='Enter')doPlayer()">
+  <button class="btn bp" id="plb" onclick="doPlayer()">Look up →</button>
+</div>
+<div class="recent-wrap" id="rw" style="display:none">
+  <div class="recent-lbl">Recent searches</div>
+  <div class="recent-list" id="rl"></div>
+</div>
+<div id="plout" style="display:none">
+  <div class="card">
+    <div class="pl-hero">
+      <div class="skin-col">
+        <canvas id="skc" width="160" height="240"></canvas>
+        <div class="skin-acts">
+          <button class="sk-btn" id="anb" onclick="toggleAnim()">⏸ Pause</button>
+          <a id="dls" href="#" target="_blank" style="display:none"><button class="sk-btn">⬇ Skin</button></a>
+        </div>
+      </div>
+      <div class="pl-meta">
+        <div class="pl-name" id="pln"></div>
+        <div class="pl-tags" id="plt"></div>
+        <div class="uuid-field">
+          <div class="uuid-lbl">UUID</div>
+          <div class="uuid-row"><span class="uuid-val" id="plu"></span><button class="cp-btn" onclick="cp(document.getElementById('plu').textContent)">Copy</button></div>
+        </div>
+        <div class="uuid-field">
+          <div class="uuid-lbl">Short UUID (no dashes)</div>
+          <div class="uuid-row"><span class="uuid-val" id="plus"></span><button class="cp-btn" onclick="cp(document.getElementById('plus').textContent)">Copy</button></div>
+        </div>
+        <div class="cape-sec" id="capesec" style="display:none">
+          <div class="cape-lbl">Cape</div>
+          <img class="cape-img" id="capei">
+        </div>
+        <div id="nocape" style="font-size:12px;color:var(--hint);margin-top:12px;display:none">No cape on this account</div>
+        <div class="pl-links" id="pll"></div>
+      </div>
+    </div>
+    <hr>
+    <div class="sgrid" id="plst"></div>
+  </div>
+</div>
+<div class="err" id="pler"></div>
+</main>
+<div class="toast" id="tst"></div>
+<script src="assets/skinview3d.bundle.js"></script>
+<script src="assets/shared.js"></script>
+<script>
+fetch('assets/nav.html').then(r=>r.text()).then(h=>{document.getElementById('nav-root').innerHTML=h;});
+async function doPlayer(){
+  const raw=document.getElementById('pli').value.trim();
+  if(!raw){ toast('Enter a username'); return; }
+  const btn=document.getElementById('plb');
+  btn.innerHTML='<span class="spin"></span>'; btn.disabled=true;
+  document.getElementById('plout').style.display='none';
+  document.getElementById('pler').style.display='none';
+  try{
+    const res=await fetch(`https://playerdb.co/api/player/minecraft/${encodeURIComponent(raw)}`);
+    const d=await res.json();
+    btn.innerHTML='Look up →'; btn.disabled=false;
+    if(!d.success||!d.data?.player){ document.getElementById('pler').textContent='Player not found.'; document.getElementById('pler').style.display='block'; return; }
+    const p=d.data.player, uuid=p.id, uname=p.username, uuidC=uuid.replace(/-/g,'');
+    const capeUrl=p.cape_texture||null;
+    const skinUrl=`https://mc-heads.net/skin/${uname}`;
+
+    document.getElementById('pln').textContent=uname;
+    document.getElementById('plu').textContent=uuid;
+    document.getElementById('plus').textContent=uuidC;
+    document.getElementById('plt').innerHTML='<span class="badge bg-b">Java Edition</span>'+(capeUrl?'<span class="badge bg-gold">Has Cape</span>':'');
+
+    if(capeUrl){ document.getElementById('capei').src=capeUrl; document.getElementById('capesec').style.display='block'; document.getElementById('nocape').style.display='none'; }
+    else { document.getElementById('capesec').style.display='none'; document.getElementById('nocape').style.display='block'; }
+
+    const dls=document.getElementById('dls'); dls.href=skinUrl; dls.style.display='block';
+    let lnks=`<a href="https://namemc.com/profile/${uname}" target="_blank" class="ext">NameMC ↗</a><a href="${skinUrl}" target="_blank" class="ext">Download skin ↗</a>`;
+    if(capeUrl) lnks+=`<a href="${capeUrl}" target="_blank" class="ext">Download cape ↗</a>`;
+    document.getElementById('pll').innerHTML=lnks;
+
+    const canvas=document.getElementById('skc');
+    if(window._sv){ try{ window._sv.dispose(); }catch(e){} window._sv=null; }
+    if(window.skinview3d){
+      const sv=new skinview3d.SkinViewer({canvas, width:160, height:240});
+      sv.animation=new skinview3d.WalkingAnimation();
+      sv.animation.speed=0.6; sv.animation.headBobbing=false; sv.zoom=0.9;
+      window._sv=sv; window._animP=false;
+      fetch(`https://mc-heads.net/skin/${uname}`).then(r=>r.blob()).then(b=>{const u=URL.createObjectURL(b);sv.loadSkin(u).then(()=>URL.revokeObjectURL(u)).catch(()=>{});}).catch(()=>{});
+      if(capeUrl) fetch(capeUrl).then(r=>r.blob()).then(b=>{const u=URL.createObjectURL(b);sv.loadCape(u).then(()=>URL.revokeObjectURL(u)).catch(()=>{});}).catch(()=>{});
+    }
+
+    document.getElementById('plst').innerHTML=`
+      <div class="stat"><div class="sl">Cape</div><div class="sv ${capeUrl?'g':'r'}" style="font-size:14px;margin-top:4px">${capeUrl?'Yes ✓':'None'}</div></div>
+      <div class="stat"><div class="sl">Skin model</div><div class="sv" style="font-size:13px;margin-top:4px" id="stype">Detecting…</div></div>
+    `;
+    try{
+      const si=new Image(); si.crossOrigin='anonymous';
+      si.onload=()=>{ const c2=document.createElement('canvas'); c2.width=si.width; c2.height=si.height; c2.getContext('2d').drawImage(si,0,0); const px=c2.getContext('2d').getImageData(54,20,1,1).data; const el=document.getElementById('stype'); if(el) el.textContent=px[3]<10?'Alex (slim)':'Steve'; };
+      si.src=skinUrl;
+    }catch(e){}
+
+    saveRecent({name:uname,uuid});
+    document.getElementById('plout').style.display='block';
+  } catch(e){
+    document.getElementById('plb').innerHTML='Look up →';
+    document.getElementById('plb').disabled=false;
+    document.getElementById('pler').textContent='Error: '+e.message;
+    document.getElementById('pler').style.display='block';
+  }
+}
+function toggleAnim(){ if(!window._sv?.animation) return; window._animP=!window._animP; window._sv.animation.paused=window._animP; document.getElementById('anb').textContent=window._animP?'▶ Play':'⏸ Pause'; }
+
+const RK='mc_toolkit_recent';
+function saveRecent(pl){ let a=[]; try{ a=JSON.parse(localStorage.getItem(RK)||'[]'); }catch(e){} a=a.filter(x=>x.uuid!==pl.uuid); a.unshift(pl); a=a.slice(0,10); localStorage.setItem(RK,JSON.stringify(a)); renderRecent(); }
+function renderRecent(){ let a=[]; try{ a=JSON.parse(localStorage.getItem(RK)||'[]'); }catch(e){} const wrap=document.getElementById('rw'), el=document.getElementById('rl'); if(!wrap||!el) return; if(!a.length){ wrap.style.display='none'; return; } wrap.style.display='block'; el.innerHTML=a.map(p=>`<button class="r-chip" onclick="document.getElementById('pli').value='${p.name}';doPlayer()"><img src="https://mc-heads.net/avatar/${p.uuid}/16" onerror="this.style.display='none'">${p.name}</button>`).join(''); }
+document.addEventListener('DOMContentLoaded', renderRecent);
+</script>
+</body>
+</html>

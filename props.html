@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>server.properties Generator — MC Toolkit</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div id="nav-root"></div>
+<main>
+<div class="ph"><span class="ph-title">server.properties</span><span class="ph-tag">Config</span></div>
+<p class="ps">Tune the most important server settings and copy the result.</p>
+<div class="card">
+  <div class="cgrid" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px">
+    <div>
+      <div class="card-title">MOTD</div>
+      <input type="text" id="sp-motd" value="A Minecraft Server" oninput="renderProps()">
+    </div>
+    <div>
+      <div class="card-title">Max Players</div>
+      <input type="number" id="sp-maxp" value="20" min="1" oninput="renderProps()">
+    </div>
+    <div>
+      <div class="card-title">Server Port</div>
+      <input type="number" id="sp-port" value="25565" oninput="renderProps()">
+    </div>
+    <div>
+      <div class="card-title">View Distance (chunks)</div>
+      <input type="number" id="sp-vd" value="10" min="2" max="32" oninput="renderProps()">
+    </div>
+    <div>
+      <div class="card-title">Simulation Distance</div>
+      <input type="number" id="sp-sd" value="10" min="2" max="32" oninput="renderProps()">
+    </div>
+    <div>
+      <div class="card-title">Difficulty</div>
+      <select id="sp-diff" oninput="renderProps()">
+        <option value="peaceful">Peaceful</option>
+        <option value="easy">Easy</option>
+        <option value="normal" selected>Normal</option>
+        <option value="hard">Hard</option>
+      </select>
+    </div>
+    <div>
+      <div class="card-title">Gamemode</div>
+      <select id="sp-gm" oninput="renderProps()">
+        <option value="survival" selected>Survival</option>
+        <option value="creative">Creative</option>
+        <option value="adventure">Adventure</option>
+        <option value="spectator">Spectator</option>
+      </select>
+    </div>
+    <div>
+      <div class="card-title">Online Mode (Premium/Cracked)</div>
+      <select id="sp-om" oninput="renderProps()">
+        <option value="true" selected>true (Premium only)</option>
+        <option value="false">false (Allow cracked)</option>
+      </select>
+    </div>
+    <div>
+      <div class="card-title">PVP</div>
+      <select id="sp-pvp" oninput="renderProps()">
+        <option value="true" selected>true</option>
+        <option value="false">false</option>
+      </select>
+    </div>
+    <div>
+      <div class="card-title">Whitelist</div>
+      <select id="sp-wl" oninput="renderProps()">
+        <option value="false" selected>false</option>
+        <option value="true">true</option>
+      </select>
+    </div>
+  </div>
+  <div class="card-title" style="margin-top:18px">Generated server.properties</div>
+  <textarea id="sp-out" style="min-height:200px;font-size:11px" readonly></textarea>
+  <button class="btn bp" style="margin-top:10px" onclick="cp(document.getElementById('sp-out').value)">Copy server.properties</button>
+</div>
+</main>
+<div class="toast" id="tst"></div>
+<script src="assets/shared.js"></script>
+<script>
+fetch('assets/nav.html').then(r=>r.text()).then(h=>{document.getElementById('nav-root').innerHTML=h;});
+function renderProps(){
+  const v=id=>document.getElementById(id).value;
+  const out=`#Minecraft server properties
+motd=${v('sp-motd')}
+max-players=${v('sp-maxp')}
+server-port=${v('sp-port')}
+view-distance=${v('sp-vd')}
+simulation-distance=${v('sp-sd')}
+difficulty=${v('sp-diff')}
+gamemode=${v('sp-gm')}
+online-mode=${v('sp-om')}
+pvp=${v('sp-pvp')}
+white-list=${v('sp-wl')}
+spawn-protection=16
+enable-command-block=false
+max-tick-time=60000
+network-compression-threshold=256
+`;
+  document.getElementById('sp-out').value=out;
+}
+renderProps();
+</script>
+</body>
+</html>

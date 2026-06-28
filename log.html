@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Log Analyser — MC Toolkit</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div id="nav-root"></div>
+<main>
+<div class="ph"><span class="ph-title">Crash Log Analyser</span><span class="ph-tag">Smart</span></div>
+<p class="ps">Paste your server log to detect errors, warnings, and get automatic fixes.</p>
+<div class="card" style="margin-bottom:12px">
+  <div class="row" style="margin-bottom:10px;gap:8px">
+    <select id="lf" style="max-width:140px"><option value="all">All lines</option><option value="error">Errors only</option><option value="warn">Warnings only</option><option value="info">Info only</option><option value="chat">Chat only</option><option value="join">Join/Leave</option></select>
+    <input type="text" id="lsrch" placeholder="Search log…" style="flex:1">
+    <button class="btn bp" onclick="doLog()">Analyse</button>
+    <button class="btn bg" onclick="clearLog()">Clear</button>
+  </div>
+  <textarea id="logi" placeholder="Paste your latest.log or crash report here…" style="min-height:160px"></textarea>
+</div>
+<div id="lstats" style="display:none;margin-bottom:12px"><div class="sgrid" id="lsg"></div></div>
+<div id="lfixes" style="margin-bottom:12px;display:none"></div>
+<div class="log-out" id="logo"></div>
+</main>
+<div class="toast" id="tst"></div>
+<script src="assets/shared.js"></script>
+<script>
+fetch('assets/nav.html').then(r=>r.text()).then(h=>{document.getElementById('nav-root').innerHTML=h;});
+function cls(l){ const s=l.toLowerCase(); if(s.includes('[error]')||s.includes('exception')||s.includes('caused by')) return'error'; if(s.includes('[warn]')||s.includes('warning')) return'warn'; if(s.includes('] <')||s.includes('[chat]')) return'chat'; if(s.includes('joined the game')||s.includes('left the game')||s.includes('logged in')) return'join'; return'info'; }
+const LOG_RULES=[
+  {pat:/java\.lang\.OutOfMemoryError/i,sev:'error',title:'Out of Memory',fix:'Increase your server RAM. Add `-Xmx4G`.'},
+  {pat:/Watchdog.*forcibly.*shut/i,sev:'error',title:'Watchdog / Server Freeze',fix:'A plugin or world operation froze the main thread.'},
+  {pat:/Connection refused.*25565/i,sev:'error',title:'Port 25565 Already In Use',fix:'Close other server instances or change port.'}
+];
+function doLog(){
+  const raw=document.getElementById('logi').value,filt=document.getElementById('lf').value,srch=document.getElementById('lsrch').value.toLowerCase();
+  if(!raw.trim()){ toast('Paste log content first'); return; }
+  const lines=raw.split('\n'); let e=0,w=0,i=0,c=0,j=0;
+  const filtered=lines.filter(l=>{ if(!l.trim()) return false; const k=cls(l); if(k==='error')e++;else if(k==='warn')w++;else if(k==='info')i++;else if(k==='chat')c++;else if(k==='join')j++; if(srch&&!l.toLowerCase().includes(srch)) return false; return filt==='all'||k===filt; });
+  document.getElementById('lstats').style.display='block';
+  document.getElementById('lsg').innerHTML=`<div class="stat"><div class="sl">Total</div><div class="sv">${lines.length}</div></div><div class="stat"><div class="sl">Errors</div><div class="sv r">${e}</div></div><div class="stat"><div class="sl">Warnings</div><div class="sv gold">${w}</div></div>`;
+  const found=[]; LOG_RULES.forEach(r=>{ if(r.pat.test(raw)&&!found.find(f=>f.title===r.title)) found.push(r); });
+  const fixEl=document.getElementById('lfixes');
+  if(found.length){
+    fixEl.style.display='block';
+    fixEl.innerHTML=found.map(f=>`<div style="background:${f.sev==='error'?'var(--red-d)':'var(--gold-d)'};padding:14px;margin-bottom:8px;border-radius:8px"><b>${f.title}</b><br>${f.fix}</div>`).join('');
+  } else { fixEl.style.display=e>0?'block':'none'; fixEl.innerHTML=e>0?`<div style="background:var(--acc-d);padding:12px;border-radius:8px">No automatic fixes found. Check errors manually.</div>`:''; }
+  const out=document.getElementById('logo'); out.classList.add('on');
+  out.innerHTML=filtered.map(l=>`<div class="ll ${cls(l)}">${l.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>`).join('');
+}
+function clearLog(){ document.getElementById('logi').value=''; document.getElementById('logo').classList.remove('on'); document.getElementById('lstats').style.display='none'; document.getElementById('lfixes').style.display='none'; }
+</script>
+</body>
+</html>

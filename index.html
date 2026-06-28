@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MC Toolkit — Home</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div id="nav-root" style="min-height: 53px;"></div>
+<main>
+<div class="hero" style="text-align:center;padding:70px 0 60px;position:relative">
+  <div style="display:inline-block;padding:6px 14px;background:var(--acc-d);border:1px solid var(--acc-b);color:var(--accent);border-radius:30px;font-size:11px;font-weight:700;margin-bottom:20px;text-transform:uppercase;letter-spacing:1px">Free &amp; Open Source</div>
+  <div style="width:64px;height:64px;background:rgba(255,255,255,0.05);border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;box-shadow:0 0 40px rgba(74,222,128,.4)"><img src="assets/icons/diamond.png" width="40"></div>
+  <h1 style="font-size:52px;font-weight:800;letter-spacing:-1.2px;margin-bottom:16px;background:linear-gradient(135deg,#fff,var(--m1));-webkit-background-clip:text;-webkit-text-fill-color:transparent">Minecraft Toolkit <span style="color:var(--accent);-webkit-text-fill-color:var(--accent)">Overpowered.</span></h1>
+  <p style="color:var(--text);font-size:17px;max-width:550px;margin:0 auto 36px;line-height:1.7;opacity:0.8">Every Minecraft server tool you need, in one place. No account, no install, 100% free forever.</p>
+  <div style="color:var(--m1);font-size:13px;font-weight:600;margin-bottom:12px;letter-spacing:0.5px">9 tools &nbsp;&nbsp;•&nbsp;&nbsp; 100% free &nbsp;&nbsp;•&nbsp;&nbsp; No account needed &nbsp;&nbsp;•&nbsp;&nbsp; <span style="color:var(--accent)">more coming soon ✦</span></div>
+  <div style="display:inline-flex;align-items:center;background:rgba(20,23,32,0.85);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.1);border-radius:50px;padding:8px 8px 8px 24px;box-shadow:0 10px 30px rgba(0,0,0,0.5);width:100%;max-width:480px;text-align:left;margin:0 auto">
+    <div class="dot on" style="margin-right:16px;box-shadow:0 0 10px var(--accent);flex-shrink:0"></div>
+    <div style="flex:1;font-family:var(--mono);font-size:13px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="cycler-text">
+      <span style="color:var(--m1)">modules/gradient</span> · <strong>Gradient Generator</strong>
+    </div>
+    <a href="gradient.html" id="cycler-btn" class="btn bp" style="border-radius:40px;height:40px;padding:0 24px;font-size:14px;text-decoration:none;font-weight:700">↗ Open</a>
+  </div>
+</div>
+
+<div style="margin-top:20px;display:flex;flex-direction:column;gap:40px;margin-bottom:60px">
+  <div class="card" style="display:flex;gap:20px;align-items:center;flex-wrap:wrap;cursor:pointer" onclick="window.location.href='ping.html'">
+    <div style="flex:1;min-width:250px">
+      <h3 style="font-size:24px;margin-bottom:10px;letter-spacing:-0.5px">Server Pinger &amp; Status</h3>
+      <p style="color:var(--m1);font-size:15px;margin-bottom:20px;line-height:1.6">Check live status, MOTD, player counts, and ping data for any Java or Bedrock server instantly.</p>
+      <span class="btn bg" style="text-decoration:none;pointer-events:none">Try Pinger →</span>
+    </div>
+    <div style="flex:1.5;min-width:300px;background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:20px;position:relative;overflow:hidden">
+       <img src="assets/icons/beacon.png" style="position:absolute;right:-20px;bottom:-20px;opacity:0.1;width:150px;transform:rotate(-15deg)">
+       <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px"><div class="dot on"></div><div style="font-weight:bold;font-size:15px">mc.hypixel.net</div><span class="badge bg-g">Online</span></div>
+       <div class="sgrid">
+         <div class="stat"><div class="sl">Players</div><div class="sv g">35K<span style="font-size:12px;color:var(--hint)">/100K</span></div></div>
+         <div class="stat"><div class="sl">Version</div><div class="sv b" style="font-size:14px;margin-top:5px">1.8.x-1.20.x</div></div>
+       </div>
+    </div>
+  </div>
+
+  <div class="card" style="display:flex;gap:20px;align-items:center;flex-wrap:wrap;flex-direction:row-reverse;cursor:pointer" onclick="window.location.href='log.html'">
+    <div style="flex:1;min-width:250px">
+      <h3 style="font-size:24px;margin-bottom:10px;letter-spacing:-0.5px">Crash Log Analyser</h3>
+      <p style="color:var(--m1);font-size:15px;margin-bottom:20px;line-height:1.6">Paste your server crash logs or latest.log to instantly detect common errors and get automatic fixes.</p>
+      <span class="btn bg" style="text-decoration:none;pointer-events:none">Analyse Logs →</span>
+    </div>
+    <div style="flex:1.5;min-width:300px;background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:20px;position:relative;overflow:hidden">
+       <img src="assets/icons/written_book.png" style="position:absolute;left:-20px;bottom:-20px;opacity:0.1;width:150px;transform:rotate(15deg)">
+       <div style="font-family:var(--mono);font-size:12px;color:var(--m1);line-height:1.8">
+         <div style="color:var(--text)">[14:22:15 INFO]: Starting minecraft server version 1.20.4</div>
+         <div style="color:var(--gold)">[14:22:18 WARN]: **** FAILED TO BIND TO PORT!</div>
+         <div style="color:var(--red)">[14:22:18 ERROR]: The exception was: java.net.BindException: Address already in use</div>
+       </div>
+       <div style="margin-top:12px;padding:10px;background:var(--red-d);border:1px solid rgba(248,113,113,.2);border-radius:6px;color:var(--red);font-size:12px;font-weight:600">
+         💡 Fix: Another server is running on port 25565. Change the port in server.properties.
+       </div>
+    </div>
+  </div>
+  <div class="card" style="display:flex;gap:20px;align-items:center;flex-wrap:wrap;cursor:pointer" onclick="window.location.href='banner.html'">
+    <div style="flex:1;min-width:250px">
+      <h3 style="font-size:24px;margin-bottom:10px;letter-spacing:-0.5px">Banner Designer</h3>
+      <p style="color:var(--m1);font-size:15px;margin-bottom:20px;line-height:1.6">Visually design Minecraft banners layer by layer, and instantly generate the spawn commands for any version.</p>
+      <span class="btn bg" style="text-decoration:none;pointer-events:none">Design a Banner →</span>
+    </div>
+    <div style="flex:1.5;min-width:300px;background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:20px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;min-height:160px">
+       <div style="width:60px;height:120px;background:#1D1D21;border:2px solid var(--border);border-radius:3px;box-shadow:0 10px 25px rgba(0,0,0,0.8);position:relative">
+         <div style="position:absolute;top:0;left:0;width:100%;height:100%;background:linear-gradient(to bottom, #C74EBD, transparent)"></div>
+         <div style="position:absolute;top:20%;left:25%;width:50%;height:50%;background:#F9801D;clip-path:circle(50% at 50% 50%)"></div>
+       </div>
+    </div>
+  </div>
+</div>
+</main>
+<div class="toast" id="tst"></div>
+<script src="assets/shared.js"></script>
+<script>
+fetch('assets/nav.html').then(r=>r.text()).then(h=>{document.getElementById('nav-root').innerHTML=h;});
+(function(){
+  const tools=[
+    {p:'modules/ping', n:'Server Pinger', h:'ping.html'},
+    {p:'modules/player', n:'Player Lookup', h:'player.html'},
+    {p:'modules/log', n:'Crash Log Analyser', h:'log.html'},
+    {p:'modules/perf', n:'Performance Analyser', h:'perf.html'},
+    {p:'modules/motd', n:'MOTD Builder', h:'motd.html'},
+    {p:'modules/gradient', n:'Gradient Generator', h:'gradient.html'},
+    {p:'modules/jvm', n:'JVM Flags', h:'jvm.html'},
+    {p:'modules/props', n:'server.properties', h:'props.html'},
+    {p:'modules/banner', n:'Banner Designer', h:'banner.html'}
+  ];
+  let tidx = 5;
+  setInterval(() => {
+    tidx = (tidx + 1) % tools.length;
+    const t = tools[tidx];
+    const textEl = document.getElementById('cycler-text');
+    if(textEl){
+       textEl.innerHTML = `<span style="color:var(--m1)">${t.p}</span> · <strong>${t.n}</strong>`;
+       document.getElementById('cycler-btn').href = t.h;
+    }
+  }, 2500);
+})();
+</script>
+</body>
+</html>

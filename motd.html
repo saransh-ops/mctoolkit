@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MOTD Builder — MC Toolkit</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div id="nav-root"></div>
+<main>
+<div class="ph"><span class="ph-title">MOTD Builder</span></div>
+<p class="ps">Craft a formatted server description with Minecraft color codes.</p>
+<div class="card">
+  <div style="margin-bottom:16px">
+    <div class="card-title">Line 1</div>
+    <div class="row">
+      <input type="text" id="m1" placeholder="Welcome to my server!" oninput="rMOTD()" style="flex:2;min-width:120px">
+      <select id="mc1" onchange="rMOTD()" style="max-width:110px;flex:0 0 110px">
+        <option value="">Color</option>
+        <option value="§0">Black</option><option value="§1">Dk Blue</option><option value="§2">Dk Green</option>
+        <option value="§3">Dk Aqua</option><option value="§4">Dk Red</option><option value="§5">Dk Purple</option>
+        <option value="§6">Gold</option><option value="§7">Gray</option><option value="§8">Dk Gray</option>
+        <option value="§9">Blue</option><option value="§a">Green</option><option value="§b">Aqua</option>
+        <option value="§c">Red</option><option value="§d">Purple</option><option value="§e">Yellow</option><option value="§f">White</option>
+      </select>
+      <select id="mf1" onchange="rMOTD()" style="max-width:110px;flex:0 0 110px">
+        <option value="">Format</option><option value="§l">Bold</option><option value="§o">Italic</option>
+        <option value="§n">Underline</option><option value="§m">Strike</option>
+      </select>
+    </div>
+  </div>
+  <div style="margin-bottom:20px">
+    <div class="card-title">Line 2</div>
+    <div class="row">
+      <input type="text" id="m2" placeholder="Play now at mc.example.com!" oninput="rMOTD()" style="flex:2;min-width:120px">
+      <select id="mc2" onchange="rMOTD()" style="max-width:110px;flex:0 0 110px">
+        <option value="">Color</option>
+        <option value="§0">Black</option><option value="§1">Dk Blue</option><option value="§2">Dk Green</option>
+        <option value="§3">Dk Aqua</option><option value="§4">Dk Red</option><option value="§5">Dk Purple</option>
+        <option value="§6">Gold</option><option value="§7">Gray</option><option value="§8">Dk Gray</option>
+        <option value="§9">Blue</option><option value="§a">Green</option><option value="§b">Aqua</option>
+        <option value="§c">Red</option><option value="§d">Purple</option><option value="§e">Yellow</option><option value="§f">White</option>
+      </select>
+      <select id="mf2" onchange="rMOTD()" style="max-width:110px;flex:0 0 110px">
+        <option value="">Format</option><option value="§l">Bold</option><option value="§o">Italic</option>
+        <option value="§n">Underline</option><option value="§m">Strike</option>
+      </select>
+    </div>
+  </div>
+  <div class="card-title">Preview</div>
+  <div class="motd-prev" id="mprev"></div>
+  <div class="row" style="margin-top:14px;gap:6px">
+    <button class="btn bg" style="font-size:12px;height:34px" onclick="cpRaw()">Copy raw §codes</button>
+    <button class="btn bg" style="font-size:12px;height:34px" onclick="cpClean()">Copy clean text</button>
+  </div>
+  <hr>
+  <div class="card-title">Color code reference — click to copy</div>
+  <div class="chips" id="chips"></div>
+</div>
+</main>
+<div class="toast" id="tst"></div>
+<script src="assets/shared.js"></script>
+<script>
+fetch('assets/nav.html').then(r=>r.text()).then(h=>{document.getElementById('nav-root').innerHTML=h;});
+const mcC=[{c:'§0',h:'#000',n:'Black'},{c:'§1',h:'#00A',n:'DkBlue'},{c:'§2',h:'#0A0',n:'DkGreen'},{c:'§3',h:'#0AA',n:'DkAqua'},{c:'§4',h:'#A00',n:'DkRed'},{c:'§5',h:'#A0A',n:'DkPurple'},{c:'§6',h:'#FA0',n:'Gold'},{c:'§7',h:'#AAA',n:'Gray'},{c:'§8',h:'#555',n:'DkGray'},{c:'§9',h:'#55F',n:'Blue'},{c:'§a',h:'#5F5',n:'Green'},{c:'§b',h:'#5FF',n:'Aqua'},{c:'§c',h:'#F55',n:'Red'},{c:'§d',h:'#F5F',n:'Purple'},{c:'§e',h:'#FF5',n:'Yellow'},{c:'§f',h:'#FFF',n:'White'}];
+document.getElementById('chips').innerHTML=mcC.map(c=>`<span class="chip" style="color:${c.h}" onclick="cp('${c.c}')" title="Click to copy ${c.c}">${c.c} ${c.n}</span>`).join('');
+function m2h(t){ const m={}; mcC.forEach(c=>m[c.c[1]]=c.h); let h='',col='#fff',b=false,it=false; for(let i=0;i<t.length;i++){ if(t[i]==='§'&&i+1<t.length){ const k=t[++i]; if(m[k]){col=m[k];b=false;it=false;}else if(k==='l')b=true;else if(k==='o')it=true;else if(k==='r'){col='#fff';b=false;it=false;} }else{ let s=`color:${col};`; if(b)s+='font-weight:bold;'; if(it)s+='font-style:italic;'; h+=`<span style="${s}">${t[i].replace(/</g,'&lt;')}</span>`; } } return h; }
+function rMOTD(){ const l1=(document.getElementById('mc1').value||'')+(document.getElementById('mf1').value||'')+document.getElementById('m1').value, l2=(document.getElementById('mc2').value||'')+(document.getElementById('mf2').value||'')+document.getElementById('m2').value; document.getElementById('mprev').innerHTML=m2h(l1)+'<br>'+m2h(l2); }
+function cpRaw(){ cp((document.getElementById('mc1').value||'')+(document.getElementById('mf1').value||'')+document.getElementById('m1').value+'\n'+(document.getElementById('mc2').value||'')+(document.getElementById('mf2').value||'')+document.getElementById('m2').value); }
+function cpClean(){ cp(document.getElementById('m1').value+'\n'+document.getElementById('m2').value); }
+rMOTD();
+</script>
+</body>
+</html>

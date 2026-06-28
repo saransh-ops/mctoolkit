@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Server Pinger — MC Toolkit</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div id="nav-root"></div>
+<main>
+<div class="ph"><span class="ph-title">Server Pinger</span><span class="ph-tag">Live</span></div>
+<p class="ps">Check any Java or Bedrock server — players, MOTD, version, and more.</p>
+<div class="card">
+  <div class="row" style="margin-bottom:20px">
+    <input type="text" id="ph" placeholder="Server address" style="flex:2;min-width:140px">
+    <input type="number" id="pp" value="25565" style="max-width:80px;flex:0 0 80px">
+    <select id="pe" style="max-width:96px;flex:0 0 96px"><option value="java">Java</option><option value="bedrock">Bedrock</option></select>
+    <button class="btn bp" id="pb" onclick="doPing()">Ping →</button>
+  </div>
+  <div id="pout" style="display:none">
+    <div class="ping-head">
+      <div class="dot" id="pdot"></div><img id="pfav" class="favicon" style="display:none">
+      <div><div class="ping-name" id="pname"></div><div class="pills" id="ptags"></div></div>
+    </div>
+    <div class="sgrid" id="pgrid"></div>
+    <div class="motd" id="pmotd" style="display:none"></div>
+    <div id="pplw" style="display:none;margin-top:14px">
+      <div class="card-title" style="margin-bottom:8px">Online Players</div>
+      <div class="pills" id="ppl"></div>
+    </div>
+  </div>
+  <div class="err" id="perr"></div>
+</div>
+</main>
+<div class="toast" id="tst"></div>
+<script src="assets/shared.js"></script>
+<script>
+fetch('assets/nav.html').then(r=>r.text()).then(h=>{document.getElementById('nav-root').innerHTML=h;});
+async function doPing(){
+  const host=document.getElementById('ph').value.trim(), port=document.getElementById('pp').value||'25565', ed=document.getElementById('pe').value;
+  if(!host){ toast('Enter a server address'); return; }
+  const btn=document.getElementById('pb'); btn.innerHTML='<span class="spin"></span>'; btn.disabled=true;
+  document.getElementById('pout').style.display='none'; document.getElementById('perr').style.display='none';
+  try{
+    const base=ed==='bedrock'?'https://api.mcsrvstat.us/bedrock/3/':'https://api.mcsrvstat.us/3/';
+    const res=await fetch(base+encodeURIComponent(host)+(port!=='25565'?':'+port:''));
+    const d=await res.json();
+    btn.innerHTML='Ping →'; btn.disabled=false;
+    const dot=document.getElementById('pdot'), pname=document.getElementById('pname'), ptags=document.getElementById('ptags');
+    if(d.online){
+      dot.className='dot on'; pname.textContent=host;
+      ptags.innerHTML=`<span class="badge bg-g">Online</span><span class="badge bg-m">${ed==='bedrock'?'Bedrock':'Java'}</span>`;
+      document.getElementById('pgrid').innerHTML=`<div class="stat"><div class="sl">Players</div><div class="sv g">${d.players?.online??0}<span style="color:var(--hint);font-size:14px"> / ${d.players?.max??0}</span></div></div><div class="stat"><div class="sl">Version</div><div class="sv b" style="font-size:13px;margin-top:2px">${d.version||'—'}</div></div><div class="stat"><div class="sl">Protocol</div><div class="sv">${d.protocol??'—'}</div></div><div class="stat"><div class="sl">SRV</div><div class="sv ${d.srv?'g':'r'}">${d.srv?'Yes':'No'}</div></div>`;
+      const motd=document.getElementById('pmotd');
+      if(d.motd?.html){ motd.innerHTML=d.motd.html.join('<br>'); motd.style.display='block'; } else motd.style.display='none';
+      const pw=document.getElementById('pplw');
+      if(d.players?.list?.length){ document.getElementById('ppl').innerHTML=d.players.list.map(p=>`<span class="pill">${p.name||p}</span>`).join(''); pw.style.display='block'; } else pw.style.display='none';
+      const fav=document.getElementById('pfav');
+      if(d.icon){ fav.src=d.icon; fav.style.display='block'; } else fav.style.display='none';
+    } else {
+      dot.className='dot off'; pname.textContent=host+' — offline';
+      ptags.innerHTML='<span class="badge bg-r">Offline</span>';
+      document.getElementById('pgrid').innerHTML='<span style="color:var(--hint);font-size:13px">Server did not respond.</span>';
+      ['pmotd','pplw'].forEach(i=>{ const el=document.getElementById(i); if(el) el.style.display='none'; });
+      document.getElementById('pfav').style.display='none';
+    }
+    document.getElementById('pout').style.display='block';
+  } catch(e){
+    btn.innerHTML='Ping →'; btn.disabled=false;
+    document.getElementById('perr').textContent='API error: '+e.message; document.getElementById('perr').style.display='block';
+  }
+}
+</script>
+</body>
+</html>

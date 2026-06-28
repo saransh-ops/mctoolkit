@@ -1,0 +1,67 @@
+<!-- Shared Nav — included via nav.js fetch on every page -->
+<nav>
+  <a class="brand" href="index.html">
+    <div class="logo"><img src="assets/icons/diamond.png" width="18"></div>
+    MC Toolkit
+  </a>
+  <div class="dd" id="toolsDD">
+    <button class="dd-btn" onclick="toggleDD()">Tools <span class="dd-arrow">▼</span></button>
+    <div class="dd-panel">
+      <div class="dd-cat">Diagnose &amp; Monitor</div>
+      <a class="dd-item" href="ping.html"><img src="assets/icons/beacon.png" width="16"> Server Pinger</a>
+      <a class="dd-item" href="log.html"><img src="assets/icons/written_book.png" width="16"> Log Analyser</a>
+      <a class="dd-item" href="perf.html"><img src="assets/icons/repeater.png" width="16"> Performance Analyser</a>
+      <div class="dd-cat">Players</div>
+      <a class="dd-item" href="player.html"><img src="assets/icons/armor_stand.png" width="16"> Player Lookup</a>
+      <div class="dd-cat">Design &amp; Text</div>
+      <a class="dd-item" href="motd.html"><img src="assets/icons/oak_sign.png" width="16"> MOTD Builder</a>
+      <a class="dd-item" href="gradient.html"><img src="assets/icons/orange_dye.png" width="16"> Gradient Generator</a>
+      <a class="dd-item" href="banner.html"><img src="assets/icons/banner_pattern.png" width="16" onerror="this.src='assets/icons/diamond.png'"> Banner Designer</a>
+      <div class="dd-cat">Configure</div>
+      <a class="dd-item" href="jvm.html"><img src="assets/icons/command.png" width="16"> JVM Flags</a>
+      <a class="dd-item" href="props.html"><img src="assets/icons/crafting_table_front.png" width="16"> server.properties</a>
+    </div>
+  </div>
+  <div class="nav-r">
+    <a href="https://godkillersaransh.vercel.app" target="_blank" class="nav-btn" style="text-decoration:none">🌐 Portfolio</a>
+    <button class="nav-btn" id="theme-nav-btn" onclick="toggleTheme()">🎨 Theme</button>
+  </div>
+</nav>
+
+<!-- THEME PANEL (Included globally) -->
+<div class="theme-panel" id="tp" style="position:absolute; right:24px; top:60px; z-index:200; width:320px;">
+  <div class="tp-head">
+    <span class="tp-title">Appearance</span>
+    <div class="tp-acts">
+      <button class="btn bg" style="height:32px;font-size:12px" onclick="loadFB()">↓ Load</button>
+      <button class="btn bp" style="height:32px;font-size:12px" onclick="saveFB()">↑ Save</button>
+    </div>
+  </div>
+  <div class="presets">
+    <span style="font-size:11px;color:var(--hint);line-height:27px;margin-right:2px">Presets</span>
+    <button class="pset" onclick="preset('default')">Default</button>
+    <button class="pset" onclick="preset('forest')">🌲 Forest</button>
+    <button class="pset" onclick="preset('ocean')">🌊 Ocean</button>
+    <button class="pset" onclick="preset('nether')">🔥 Nether</button>
+    <button class="pset" onclick="preset('end')">🌌 The End</button>
+    <button class="pset" onclick="preset('ice')">❄ Ice</button>
+  </div>
+  <div class="c-row"><span class="c-lbl">Accent</span><input type="color" id="cp" value="#4ade80" oninput="liveTheme()"><span class="c-hex" id="cpv">#4ade80</span></div>
+  <div class="c-row"><span class="c-lbl">Background</span><input type="color" id="cb" value="#08090d" oninput="liveTheme()"><span class="c-hex" id="cbv">#08090d</span></div>
+  <div class="c-row"><span class="c-lbl">Surface</span><input type="color" id="cs" value="#0e1018" oninput="liveTheme()"><span class="c-hex" id="csv">#0e1018</span></div>
+  <div class="c-row"><span class="c-lbl">Card</span><input type="color" id="cc" value="#141720" oninput="liveTheme()"><span class="c-hex" id="ccv">#141720</span></div>
+  <div style="margin-top:10px;padding:10px;background:var(--s2);border:1px solid var(--border);border-radius:8px">
+    <div style="font-size:11px;color:var(--m2);font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">🔗 Sync Code</div>
+    <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px">
+      <code id="sync-code-display" style="flex:1;font-family:var(--mono);font-size:14px;font-weight:700;color:var(--accent);background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:6px 10px;letter-spacing:2px"></code>
+      <button class="btn bg" style="height:32px;font-size:11px" onclick="copySyncCode()">📋 Copy</button>
+      <button class="btn bg" style="height:32px;font-size:11px" onclick="newSyncCode()">🔄 New</button>
+    </div>
+    <div style="font-size:11px;color:var(--hint);margin-bottom:6px">Or enter code from another site:</div>
+    <div style="display:flex;gap:6px">
+      <input type="text" id="sync-code-input" placeholder="e.g. A7X-9BQ" maxlength="7" style="font-family:var(--mono);letter-spacing:2px;text-transform:uppercase;font-size:13px;flex:1">
+      <button class="btn bp" style="height:34px;font-size:12px" onclick="applySyncCode()">Apply</button>
+    </div>
+  </div>
+  <div class="fb-log" id="fbl"></div>
+</div>

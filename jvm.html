@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>JVM Flags Generator — MC Toolkit</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div id="nav-root"></div>
+<main>
+<div class="ph"><span class="ph-title">JVM Flags Generator</span><span class="ph-tag">Aikar's</span></div>
+<p class="ps">Generate optimized Java startup flags for your Minecraft server.</p>
+<div class="card">
+  <div class="card-title">Server RAM (GB)</div>
+  <div class="row" style="margin-bottom:14px">
+    <input type="number" id="jvm-ram" value="4" min="1" max="64" style="max-width:100px" oninput="renderJVM()">
+    <span style="color:var(--m1);font-size:13px">GB allocated to server</span>
+  </div>
+  <div class="card-title">Java version</div>
+  <div class="row" style="margin-bottom:14px;gap:8px">
+    <button class="btn bp" id="jvm-j21" onclick="setJVer(21)" style="height:34px;font-size:12px">Java 21 ✓</button>
+    <button class="btn bg" id="jvm-j17" onclick="setJVer(17)" style="height:34px;font-size:12px">Java 17</button>
+    <button class="btn bg" id="jvm-j11" onclick="setJVer(11)" style="height:34px;font-size:12px">Java 11</button>
+  </div>
+  <div class="card-title">Server JAR filename</div>
+  <input type="text" id="jvm-jar" value="server.jar" oninput="renderJVM()" style="margin-bottom:14px">
+  <div class="card-title">Generated flags</div>
+  <textarea id="jvm-out" style="min-height:140px;font-size:11px" readonly></textarea>
+  <div class="row" style="margin-top:10px;gap:8px">
+    <button class="btn bp" onclick="cp(document.getElementById('jvm-out').value)">Copy flags</button>
+    <span style="font-size:12px;color:var(--m1);align-self:center">Aikar's flags — optimized GC for Minecraft servers</span>
+  </div>
+</div>
+</main>
+<div class="toast" id="tst"></div>
+<script src="assets/shared.js"></script>
+<script>
+fetch('assets/nav.html').then(r=>r.text()).then(h=>{document.getElementById('nav-root').innerHTML=h;});
+let jvmVer=21;
+function setJVer(v){ jvmVer=v; ['21','17','11'].forEach(x=>{ const el=document.getElementById('jvm-j'+x); el.className=x==v?'btn bp':'btn bg'; }); renderJVM(); }
+function renderJVM(){
+  const ram=parseInt(document.getElementById('jvm-ram').value)||4;
+  const jar=document.getElementById('jvm-jar').value||'server.jar';
+  const g1=jvmVer>=17?'--add-modules=jdk.incubator.vector ':'';
+  const flags=`java -Xms${ram}G -Xmx${ram}G ${g1}-XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200 -XX:+UnlockExperimentalVMOptions -XX:+DisableExplicitGC -XX:+AlwaysPreTouch -XX:G1NewSizePercent=30 -XX:G1MaxNewSizePercent=40 -XX:G1HeapRegionSize=8M -XX:G1ReservePercent=20 -XX:G1HeapWastePercent=5 -XX:G1MixedGCCountTarget=4 -XX:InitiatingHeapOccupancyPercent=15 -XX:G1MixedGCLiveThresholdPercent=90 -XX:G1RSetUpdatingPauseTimePercent=5 -XX:SurvivorRatio=32 -XX:+PerfDisableSharedMem -XX:MaxTenuringThreshold=1 -Dusing.aikars.flags=https://mcflags.emc.gs -Daikars.new.flags=true -jar ${jar} --nogui`;
+  document.getElementById('jvm-out').value=flags;
+}
+renderJVM();
+</script>
+</body>
+</html>

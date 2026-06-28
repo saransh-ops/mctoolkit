@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Banner Designer — MC Toolkit</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+<style>
+.cbtn{width:28px;height:28px;border-radius:6px;border:1px solid rgba(255,255,255,.1);cursor:pointer;transition:transform .1s,box-shadow .1s;flex-shrink:0}
+.cbtn:hover{transform:scale(1.1);box-shadow:0 0 10px rgba(0,0,0,.5)}
+.cbtn.on{border:2px solid var(--accent);transform:scale(1.15);box-shadow:0 0 12px var(--accent)}
+
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(48px,1fr));gap:6px;margin-top:12px;max-height:220px;overflow-y:auto;padding-right:6px}
+.pbtn{background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:4px;cursor:pointer;transition:background .15s}
+.pbtn:hover{background:var(--s3);border-color:var(--bh)}
+.pbtn.on{border-color:var(--accent);background:var(--acc-d)}
+.pbtn svg{width:100%;height:auto;border-radius:2px;background:#1a1e2a}
+
+.lrow{display:flex;align-items:center;gap:12px;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:10px 14px;margin-bottom:8px;transition:border-color .2s}
+.lrow.on{border-color:var(--accent);background:var(--acc-d)}
+</style>
+</head>
+<body>
+<div id="nav-root" style="min-height:53px"></div>
+<main>
+<div class="hero ph"><span class="ph-title">Banner Designer</span><span class="ph-tag">Live Preview</span></div>
+<p class="ps">Visually design Minecraft banners and generate the exact give commands.</p>
+
+<div class="pl-hero">
+  <!-- Left column: Preview & Code -->
+  <div class="skin-col card" style="width:240px">
+    <div style="width:140px;height:280px;border:3px solid rgba(255,255,255,.1);border-radius:4px;box-shadow:0 10px 25px rgba(0,0,0,.7);position:relative;overflow:hidden">
+      <svg id="bsvg" viewBox="0 0 100 200" style="width:100%;height:100%"></svg>
+    </div>
+    
+    <div style="width:100%;margin-top:20px">
+      <div class="uuid-lbl">1.21+ Command</div>
+      <div class="row" style="flex-wrap:nowrap"><input type="text" id="b21" readonly style="font-size:11px"><button class="btn bg" onclick="cp(document.getElementById('b21').value)">Copy</button></div>
+    </div>
+    <div style="width:100%;margin-top:12px">
+      <div class="uuid-lbl">1.20 & Older Command</div>
+      <div class="row" style="flex-wrap:nowrap"><input type="text" id="b20" readonly style="font-size:11px"><button class="btn bg" onclick="cp(document.getElementById('b20').value)">Copy</button></div>
+    </div>
+  </div>
+  
+  <!-- Right column: Layer Editor -->
+  <div class="pl-meta card" style="flex:1">
+    
+    <!-- Base Color -->
+    <div class="card-title" style="display:flex;justify-content:space-between">
+      <span>1. Select Base Color</span>
+    </div>
+    <div class="row" id="cpalette" style="margin-bottom:24px;gap:6px"></div>
+    
+    <!-- Layers List -->
+    <div class="card-title" style="display:flex;justify-content:space-between;align-items:center">
+      <span>2. Pattern Layers (<span id="lcnt">0</span>/6)</span>
+      <button class="btn bg" onclick="addLayer()" id="addb" style="height:28px;font-size:11px">+ Add Layer</button>
+    </div>
+    <div id="llist" style="margin-bottom:24px"></div>
+    
+    <!-- Pattern Picker (Dynamic) -->
+    <div id="pedit" style="display:none;background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:16px;box-shadow:var(--sh)">
+      <div class="card-title" style="margin-bottom:8px">Editing Layer <span id="eidx"></span></div>
+      <div class="uuid-lbl">Pattern Color</div>
+      <div class="row" id="lpalette" style="margin-bottom:14px;gap:6px"></div>
+      
+      <div class="uuid-lbl">Pattern Shape</div>
+      <div class="pgrid" id="pgrid"></div>
+    </div>
+    
+  </div>
+</div>
+
+<div class="card" style="margin-top:12px" id="sg-card">
+  <div class="card-title" style="margin-bottom:12px">Survival Crafting Guide</div>
+  <div id="sg-steps" style="display:flex;flex-direction:column;gap:10px"></div>
+</div>
+
+</main>
+<div class="toast" id="tst"></div>
+<script src="assets/shared.js"></script>
+<script>
+fetch('assets/nav.html').then(r=>r.text()).then(h=>{document.getElementById('nav-root').innerHTML=h;});
+
+const COLS = {
+  white:{name:'White',hex:'#FFFFFF',id:0}, orange:{name:'Orange',hex:'#F9801D',id:1},
+  magenta:{name:'Magenta',hex:'#C74EBD',id:2}, light_blue:{name:'Light Blue',hex:'#3AB3DA',id:3},
+  yellow:{name:'Yellow',hex:'#FED83D',id:4}, lime:{name:'Lime',hex:'#80C71F',id:5},
+  pink:{name:'Pink',hex:'#F38BA8',id:6}, gray:{name:'Gray',hex:'#474F52',id:7},
+  light_gray:{name:'Light Gray',hex:'#9D9D97',id:8}, cyan:{name:'Cyan',hex:'#169C9C',id:9},
+  purple:{name:'Purple',hex:'#893293',id:10}, blue:{name:'Blue',hex:'#3C44AA',id:11},
+  brown:{name:'Brown',hex:'#835432',id:12}, green:{name:'Green',hex:'#5E7C16',id:13},
+  red:{name:'Red',hex:'#B02E26',id:14}, black:{name:'Black',hex:'#1D1D21',id:15}
+};
+
+const PATS = {
+  ts:{n:'Top Stripe',d:c=>`<rect x="0" y="0" width="100" height="66.7" fill="${c}"/>`,m:'stripe_top'},
+  bs:{n:'Bottom Stripe',d:c=>`<rect x="0" y="133.3" width="100" height="66.7" fill="${c}"/>`,m:'stripe_bottom'},
+  ls:{n:'Left Stripe',d:c=>`<rect x="0" y="0" width="33.3" height="200" fill="${c}"/>`,m:'stripe_left'},
+  rs:{n:'Right Stripe',d:c=>`<rect x="66.7" y="0" width="33.3" height="200" fill="${c}"/>`,m:'stripe_right'},
+  cs:{n:'Center Stripe',d:c=>`<rect x="33.3" y="0" width="33.3" height="200" fill="${c}"/>`,m:'stripe_center'},
+  ms:{n:'Middle Stripe',d:c=>`<rect x="0" y="83.3" width="100" height="33.3" fill="${c}"/>`,m:'stripe_middle'},
+  drs:{n:'Diag Right Stripe',d:c=>`<polygon points="0,0 25,0 100,150 100,200 75,200 0,50" fill="${c}"/>`,m:'stripe_downright'},
+  dls:{n:'Diag Left Stripe',d:c=>`<polygon points="100,0 75,0 0,150 0,200 25,200 100,50" fill="${c}"/>`,m:'stripe_downleft'},
+  ss:{n:'Small Stripes',d:c=>`<path d="M0 0h12.5v200H0zM25 0h12.5v200H25zM50 0h12.5v200H50zM75 0h12.5v200H75z" fill="${c}"/>`,m:'small_stripes'},
+  cr:{n:'Cross',d:c=>`<path d="M37.5 0h25v200h-25zM0 87.5h100v25H0z" fill="${c}"/>`,m:'cross'},
+  sc:{n:'Diag Cross',d:c=>`<polygon points="0,0 15,0 100,170 100,200 85,200 0,30" fill="${c}"/><polygon points="100,0 100,30 15,200 0,200 0,170 85,0" fill="${c}"/>`,m:'straight_cross'},
+  ld:{n:'Diag Left Split',d:c=>`<polygon points="0,0 100,200 0,200" fill="${c}"/>`,m:'diagonal_left'},
+  rud:{n:'Diag Up Right Split',d:c=>`<polygon points="0,200 100,0 0,0" fill="${c}"/>`,m:'diagonal_up_right'},
+  lud:{n:'Diag Up Left Split',d:c=>`<polygon points="100,200 0,0 100,0" fill="${c}"/>`,m:'diagonal_up_left'},
+  rd:{n:'Diag Right Split',d:c=>`<polygon points="100,0 0,200 100,200" fill="${c}"/>`,m:'diagonal_right'},
+  vh:{n:'Vertical Split',d:c=>`<rect x="0" y="0" width="50" height="200" fill="${c}"/>`,m:'half_vertical'},
+  vhr:{n:'Vert Split Inverted',d:c=>`<rect x="50" y="0" width="50" height="200" fill="${c}"/>`,m:'half_vertical_right'},
+  hh:{n:'Horiz Split',d:c=>`<rect x="0" y="0" width="100" height="100" fill="${c}"/>`,m:'half_horizontal'},
+  hhr:{n:'Horiz Split Inv',d:c=>`<rect x="0" y="100" width="100" height="100" fill="${c}"/>`,m:'half_horizontal_bottom'},
+  bl:{n:'Bottom Left',d:c=>`<polygon points="0,133.3 50,200 0,200" fill="${c}"/>`,m:'square_bottom_left'},
+  br:{n:'Bottom Right',d:c=>`<polygon points="100,133.3 100,200 50,200" fill="${c}"/>`,m:'square_bottom_right'},
+  tl:{n:'Top Left',d:c=>`<polygon points="0,0 50,0 0,66.7" fill="${c}"/>`,m:'square_top_left'},
+  tr:{n:'Top Right',d:c=>`<polygon points="100,0 100,66.7 50,0" fill="${c}"/>`,m:'square_top_right'},
+  bt:{n:'Bottom Triangle',d:c=>`<polygon points="0,200 50,100 100,200" fill="${c}"/>`,m:'triangle_bottom'},
+  tt:{n:'Top Triangle',d:c=>`<polygon points="0,0 50,100 100,0" fill="${c}"/>`,m:'triangle_top'},
+  bts:{n:'Sawtooth Bottom',d:c=>`<polygon points="0,200 16.7,150 33.3,200 50,150 66.7,200 83.3,150 100,200" fill="${c}"/>`,m:'triangles_bottom'},
+  tts:{n:'Sawtooth Top',d:c=>`<polygon points="0,0 16.7,50 33.3,0 50,50 66.7,0 83.3,50 100,0" fill="${c}"/>`,m:'triangles_top'},
+  mc:{n:'Middle Circle',d:c=>`<circle cx="50" cy="100" r="28" fill="${c}"/>`,m:'circle'},
+  mr:{n:'Middle Rhombus',d:c=>`<polygon points="50,50 85,100 50,150 15,100" fill="${c}"/>`,m:'rhombus'},
+  bo:{n:'Border',d:c=>`<path d="M0 0h100v200H0zM12.5 12.5v175h75v-175z" fill-rule="evenodd" fill="${c}"/>`,m:'border'},
+  cbo:{n:'Curly Border',d:c=>`<path d="M0 0L12.5 12.5L25 0L37.5 12.5L50 0L62.5 12.5L75 0L87.5 12.5L100 0L87.5 25L100 50L87.5 75L100 100L87.5 125L100 150L87.5 175L100 200L75 187.5L50 200L25 187.5L0 200L12.5 175L0 150L12.5 125L0 100L12.5 75L0 50L12.5 25Z M16.7 25v150h66.6V25z" fill-rule="evenodd" fill="${c}"/>`,m:'curly_border'},
+  gra:{n:'Gradient Down',d:c=>`<defs><linearGradient id="g_${c.replace('#','')}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${c}" stop-opacity="1"/><stop offset="100%" stop-color="${c}" stop-opacity="0"/></linearGradient></defs><rect x="0" y="0" width="100" height="200" fill="url(#g_${c.replace('#','')})"/>`,m:'gradient'},
+  gru:{n:'Gradient Up',d:c=>`<defs><linearGradient id="gu_${c.replace('#','')}" x1="0" y1="1" x2="0" y2="0"><stop offset="0%" stop-color="${c}" stop-opacity="1"/><stop offset="100%" stop-color="${c}" stop-opacity="0"/></linearGradient></defs><rect x="0" y="0" width="100" height="200" fill="url(#gu_${c.replace('#','')})"/>`,m:'gradient_up'},
+  cre:{n:'Creeper',d:c=>`<path d="M25 50h50v75H25zM31.25 62.5h12.5v12.5h-12.5zM56.25 62.5h12.5v12.5h-12.5zM43.75 87.5h12.5v25h-12.5zM37.5 100h6.25v25H37.5zM56.25 100h6.25v25h-6.25z" fill="${c}"/>`,m:'creeper'},
+  sku:{n:'Skull',d:c=>`<path d="M37.5 60h25v30h-25zM25 100h50v10H25zM43.75 90h12.5v20h-12.5zM31.25 70h6.25v10h-6.25zM62.5 70h6.25v10h-6.25z" fill="${c}"/>`,m:'skull'},
+  mo:{n:'Mojang',d:c=>`<path d="M30 70C30 50 70 50 70 70C70 75 60 80 50 85C55 90 55 100 50 110C45 100 45 90 50 85C40 80 30 75 30 70Z" fill="${c}"/>`,m:'mojang'},
+  glob:{n:'Globe',d:c=>`<circle cx="50" cy="100" r="30" fill="none" stroke="${c}" stroke-width="6"/><ellipse cx="50" cy="100" rx="15" ry="30" fill="none" stroke="${c}" stroke-width="4"/><line x1="20" y1="100" x2="80" y2="100" stroke="${c}" stroke-width="4"/>`,m:'globe'}
+};
+
+let bCol='white';
+let lay=[];
+let aidx=-1;
+
+function init(){
+  const cp=document.getElementById('cpalette'), lp=document.getElementById('lpalette');
+  Object.keys(COLS).forEach(k=>{
+    const b1=document.createElement('button'), b2=document.createElement('button');
+    b1.className=b2.className='cbtn';
+    b1.style.background=b2.style.background=COLS[k].hex;
+    b1.title=b2.title=COLS[k].name;
+    b1.onclick=()=>setBase(k); b2.onclick=()=>setLayCol(k);
+    b1.id='bc_'+k; b2.id='lc_'+k;
+    cp.appendChild(b1); lp.appendChild(b2);
+  });
+  
+  const pg=document.getElementById('pgrid');
+  Object.keys(PATS).forEach(k=>{
+    const btn=document.createElement('button');
+    btn.className='pbtn'; btn.title=PATS[k].n; btn.id='pb_'+k;
+    btn.innerHTML=`<svg viewBox="0 0 100 200">${PATS[k].d('#a8a8a8')}</svg>`;
+    btn.onclick=()=>setLayPat(k);
+    pg.appendChild(btn);
+  });
+  update();
+}
+
+function setBase(k){ bCol=k; update(); }
+function setLayCol(k){ if(aidx>=0){ lay[aidx].c=k; update(); } }
+function setLayPat(k){ if(aidx>=0){ lay[aidx].p=k; update(); } }
+
+function addLayer(){
+  if(lay.length>=6){ toast('Max 6 layers allowed.'); return; }
+  lay.push({c:'black',p:'ts'});
+  aidx=lay.length-1;
+  update();
+}
+
+function selLayer(i){ aidx=i; update(); }
+function delLayer(i, e){ e.stopPropagation(); lay.splice(i,1); aidx=-1; update(); }
+function movLayer(i, d, e){ e.stopPropagation(); const n=i+d; if(n<0||n>=lay.length)return; [lay[i],lay[n]]=[lay[n],lay[i]]; aidx=n; update(); }
+
+function update(){
+  document.querySelectorAll('.cbtn').forEach(b=>b.classList.remove('on'));
+  document.getElementById('bc_'+bCol)?.classList.add('on');
+  
+  if(aidx>=0 && lay[aidx]){
+    document.getElementById('lc_'+lay[aidx].c)?.classList.add('on');
+    document.querySelectorAll('.pbtn').forEach(b=>b.classList.remove('on'));
+    document.getElementById('pb_'+lay[aidx].p)?.classList.add('on');
+    document.getElementById('pedit').style.display='block';
+    document.getElementById('eidx').textContent=aidx+1;
+  } else {
+    document.getElementById('pedit').style.display='none';
+  }
+  
+  document.getElementById('lcnt').textContent=lay.length;
+  document.getElementById('addb').disabled=lay.length>=6;
+  
+  const ll=document.getElementById('llist');
+  if(!lay.length) ll.innerHTML='<div style="font-size:12px;color:var(--hint)">No layers added yet. Base color only.</div>';
+  else {
+    ll.innerHTML=lay.map((l,i)=>`
+      <div class="lrow ${i===aidx?'on':''}" style="cursor:pointer" onclick="selLayer(${i})">
+        <div class="cbtn" style="background:${COLS[l.c].hex}"></div>
+        <div style="flex:1">
+          <div style="font-weight:600;font-size:13px">${PATS[l.p].n}</div>
+          <div style="font-size:11px;color:var(--m1)">${COLS[l.c].name}</div>
+        </div>
+        <button class="btn bg" style="padding:0 8px" onclick="movLayer(${i},-1,event)" ${i===0?'disabled':''}>↑</button>
+        <button class="btn bg" style="padding:0 8px" onclick="movLayer(${i},1,event)" ${i===lay.length-1?'disabled':''}>↓</button>
+        <button class="btn br" style="padding:0 8px" onclick="delLayer(${i},event)">X</button>
+      </div>
+    `).join('');
+  }
+  
+  // Render SVG
+  let svg=`<rect x="0" y="0" width="100" height="200" fill="${COLS[bCol].hex}"/>`;
+  lay.forEach(l=> svg += PATS[l.p].d(COLS[l.c].hex));
+  document.getElementById('bsvg').innerHTML=svg;
+  
+  // Render Commands
+  if(!lay.length){
+    document.getElementById('b20').value = `/give @p minecraft:${bCol}_banner`;
+    document.getElementById('b21').value = `/give @p minecraft:${bCol}_banner`;
+  } else {
+    // 1.20 format: {BlockEntityTag:{Patterns:[{Pattern:"ts",Color:14}]}}
+    const p20 = lay.map(l=>`{Pattern:"${l.p}",Color:${COLS[l.c].id}}`).join(',');
+    document.getElementById('b20').value = `/give @p minecraft:${bCol}_banner{BlockEntityTag:{Patterns:[${p20}]}} 1`;
+    
+    // 1.21 format: [minecraft:banner_patterns=[{pattern:"minecraft:stripe_top",color:"red"}]]
+    const p21 = lay.map(l=>`{pattern:"minecraft:${PATS[l.p].m}",color:"${l.c}"}`).join(',');
+    document.getElementById('b21').value = `/give @p minecraft:${bCol}_banner[minecraft:banner_patterns=[${p21}]] 1`;
+  }
+  
+  // Render Crafting Guide
+  const sgs = document.getElementById('sg-steps');
+  let html = `
+    <div class="row" style="align-items:flex-start;background:var(--s2);padding:10px 14px;border:1px solid var(--border);border-radius:var(--rs);flex-wrap:nowrap">
+      <div style="width:28px;height:28px;border-radius:6px;background:var(--s3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:12px;flex-shrink:0">1</div>
+      <div style="flex:1">
+        <div style="font-weight:600;font-size:13px;color:var(--text)">Step 1: Base Banner</div>
+        <div style="font-size:12px;color:var(--m1)">Craft a <b>${COLS[bCol].name} Banner</b> using 6 ${COLS[bCol].name} Wool blocks and 1 Stick.</div>
+      </div>
+    </div>
+  `;
+  lay.forEach((l, i) => {
+    html += `
+      <div class="row" style="align-items:flex-start;background:var(--s2);padding:10px 14px;border:1px solid var(--border);border-radius:var(--rs);flex-wrap:nowrap">
+        <div style="width:28px;height:28px;border-radius:6px;background:var(--s3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:12px;flex-shrink:0">${i+2}</div>
+        <div style="flex:1">
+          <div style="font-weight:600;font-size:13px;color:var(--text)">Step ${i+2}: ${PATS[l.p].n}</div>
+          <div style="font-size:12px;color:var(--m1)">Place the banner in a Loom with 1 <b>${COLS[l.c].name} Dye</b> and select the <b>${PATS[l.p].n}</b> pattern.</div>
+        </div>
+      </div>
+    `;
+  });
+  sgs.innerHTML = html;
+}
+
+init();
+</script>
+</body>
+</html>
