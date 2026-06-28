@@ -87,9 +87,9 @@ The entire UI is powered by a shared **CSS custom property design token system**
 
 ### Theming
 A theme sync code lets you share your colour customisation across three related sites:
-- `mc-toolkit` (this project)
-- `mcmodrpupdater`
-- `portfolio`
+- mc-toolkit (this project)
+- [mcmodrpupdater](https://mcmodrpupdater.vercel.app/)
+- [portfolio](https://godkillersaransh.vercel.app/)
 
 Themes are stored under `/themes/{code}` in Firebase and loaded automatically on page load.
 
