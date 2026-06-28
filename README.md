@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="assets/icons/diamond.png" width="64" alt="MC Toolkit Logo">
+<img src="pfp.png" width="64" alt="MC Toolkit Logo">
 
 # MC Toolkit
 
